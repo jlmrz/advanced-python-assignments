@@ -1,10 +1,14 @@
+"""
+Modularity concept means that the core of the system contains only basic functionality for working, and
+all specific functions, such as the graphical environment or tools, are placed in separate plug-ins.
+"""
 from abc import abstractmethod, ABC, ABCMeta
 from types import ModuleType
 from typing import Optional, Any, TypeVar, Union
 
-from .core import Named
-from .meta import Meta
-from .task import Task
+from stem_framework.stem.core import Named
+from stem_framework.stem.meta import Meta
+from stem_framework.stem.task import Task
 
 T = TypeVar("T")
 
@@ -110,7 +114,7 @@ class ILocalWorkspace(IWorkspace):
 
 class LocalWorkspace(ILocalWorkspace):
 
-    def __init__(self, name,  tasks=(), workspaces=()):
+    def __init__(self, name, tasks=(), workspaces=()):
         self._name = name
         self._tasks = tasks
         self._workspaces = workspaces

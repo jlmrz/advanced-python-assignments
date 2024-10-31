@@ -1,7 +1,10 @@
+"""
+This module contains tasks which are global data processing blocks.
+"""
 from typing import TypeVar, Union, Tuple, Callable, Optional, Generic, Any, Iterator
 from abc import ABC, abstractmethod
-from .core import Named
-from .meta import Specification, Meta
+from stem_framework.stem.core import Named
+from stem_framework.stem.meta import Specification, Meta
 
 T = TypeVar("T")
 

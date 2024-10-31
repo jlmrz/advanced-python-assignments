@@ -1,3 +1,8 @@
+"""
+Metadata is data that provides information about other data.
+Metadata processor is a principle of data processing when no user instructions or manually managed
+intermediate states are possible. It allows using only data or metadata.
+"""
 from dataclasses import dataclass
 from typing import Optional, Any, Union
 

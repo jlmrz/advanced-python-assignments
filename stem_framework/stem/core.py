@@ -1,3 +1,6 @@
+"""
+Core module.
+"""
 from typing import Optional
 
 
