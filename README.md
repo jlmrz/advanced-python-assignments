@@ -1,3 +1,5 @@
 # Advanced python homework
 
-Before perform of new homework assignment merge top commit of main branch in your repository.
+Assignment 1 
+
+P. 1 - 3 are completed.
