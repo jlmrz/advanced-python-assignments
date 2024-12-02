@@ -20,7 +20,6 @@ class Named:
             return self._name
         else:
             name = self.__class__.__name__
-            print(name)
             return pascal_case_to_snake_case(name)
 
 
