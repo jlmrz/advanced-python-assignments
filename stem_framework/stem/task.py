@@ -3,6 +3,7 @@ This module contains tasks which are global data processing blocks.
 """
 from typing import TypeVar, Union, Tuple, Callable, Optional, Generic, Any, Iterator
 from abc import ABC, abstractmethod
+from inspect import signature
 from stem_framework.stem.core import Named
 from stem_framework.stem.meta import Specification, Meta
 
@@ -67,24 +68,57 @@ class FunctionDataTask(DataTask[T]):
 
 
 def data(func: Callable[[Meta], T], specification: Optional[Specification] = None, **settings) -> FunctionDataTask[T]:
-    ...  # TODO()
-
+    return FunctionDataTask(
+        name=func.__name__,
+        func=func,
+        specification=specification,
+        settings=settings
+    )
 
 
 def task(func: Callable[[Meta, ...], T], specification: Optional[Specification] = None, **settings) -> FunctionTask[T]:
-    ... # TODO()
+    dependencies = tuple(name for name in signature(func).parameters.keys() if name != 'meta')
+    return FunctionTask(
+        name=func.__name__,
+        func=func,
+        dependencies=dependencies,
+        specification=specification,
+        settings=settings
+    )
 
 
 class MapTask(Task[Iterator[T]]):
-    def __init__(self, func: Callable, dependence : Union[str, "Task"]):
-        ... # TODO()
+    def __init__(self, func: Callable, dependence: Union[str, "Task"]):
+        self._func = func
+        self.dependencies = dependence
+        self._name = 'map_' + dependence.name
+
+    def transform(self, meta: Meta, **kwargs):
+        for dependence in self.dependencies.transform(meta, **kwargs):
+            yield self._func(dependence)
 
 
 class FilterTask(Task[Iterator[T]]):
     def __init__(self, key: Callable, dependence: Union[str, "Task"]):
-        ...  # TODO()
+        self._name = 'filter_' + dependence.name
+        self.dependencies = dependence
+        self.key = key
+
+    def transform(self, meta: Meta, /, **kwargs: Any) -> T:
+        for dependence in self.dependencies.transform(meta, **kwargs):
+            if self.key(dependence):
+                yield dependence
 
 
 class ReduceTask(Task[Iterator[T]]):
     def __init__(self, func: Callable, dependence: Union[str, "Task"]):
-        ...  # TODO()
+        self._name = 'reduce_' + dependence.name
+        self.dependencies = dependence
+        self.func = func
+
+    def transform(self, meta: Meta, /, **kwargs: Any) -> T:
+        iterator = self.dependencies.transform(meta, **kwargs)
+        value = next(iterator)
+        for dependence in iterator:
+            value = self.func(value, dependence)
+        return value
