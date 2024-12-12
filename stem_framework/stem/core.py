@@ -22,10 +22,6 @@ class Named:
             name = self.__class__.__name__
             return pascal_case_to_snake_case(name)
 
-    @property
-    def __name__(self):
-        return self._name
-
 
 @dataclass
 class Dataclass:

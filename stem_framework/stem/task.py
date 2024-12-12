@@ -4,8 +4,9 @@ This module contains tasks which are global data processing blocks.
 from typing import TypeVar, Union, Tuple, Callable, Optional, Generic, Any, Iterator
 from abc import ABC, abstractmethod
 from inspect import signature
-from stem_framework.stem.core import Named
-from stem_framework.stem.meta import Specification, Meta
+from functools import wraps
+from .core import Named
+from .meta import Specification, Meta
 
 T = TypeVar("T")
 
@@ -68,23 +69,25 @@ class FunctionDataTask(DataTask[T]):
 
 
 def data(func: Callable[[Meta], T], specification: Optional[Specification] = None, **settings) -> FunctionDataTask[T]:
-    return FunctionDataTask(
+    fdt = FunctionDataTask(
         name=func.__name__,
         func=func,
         specification=specification,
         settings=settings
     )
+    return wraps(func)(fdt)
 
 
 def task(func: Callable[[Meta, ...], T], specification: Optional[Specification] = None, **settings) -> FunctionTask[T]:
     dependencies = tuple(name for name in signature(func).parameters.keys() if name != 'meta')
-    return FunctionTask(
+    ft = FunctionTask(
         name=func.__name__,
         func=func,
         dependencies=dependencies,
         specification=specification,
         settings=settings
     )
+    return wraps(func)(ft)
 
 
 class MapTask(Task[Iterator[T]]):
