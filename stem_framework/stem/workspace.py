@@ -5,10 +5,10 @@ all specific functions, such as the graphical environment or tools, are placed i
 from abc import abstractmethod, ABC, ABCMeta
 from types import ModuleType
 from typing import Optional, Any, TypeVar, Union
-
-from stem_framework.stem.core import Named
-from stem_framework.stem.meta import Meta
-from stem_framework.stem.task import Task
+from inspect import isclass, getmodule
+from .core import Named
+from .meta import Meta
+from .task import Task
 
 T = TypeVar("T")
 
@@ -62,6 +62,8 @@ class ProxyTask(Task[T]):
 
 
 class IWorkspace(ABC, Named):
+    _tasks: dict[str, Task] = NotImplemented
+    _workspaces: set['IWorkspace'] = NotImplemented
 
     @property
     @abstractmethod
@@ -74,7 +76,17 @@ class IWorkspace(ABC, Named):
         pass
 
     def find_task(self, task_path: Union[str, TaskPath]) -> Optional[Task]:
-        ...  # TODO()
+        if isinstance(task_path, str):
+            task_path = TaskPath(task_path)
+        if task_path.is_leaf:
+            task = self.tasks.get(task_path.name, None)
+            if task is None:
+                for w in self.workspaces:
+                    task = w.find_task(task_path)
+            return task
+        else:
+            workspace = self.get_workspace(task_path.head)
+            return workspace.find_task(task_path.sub_path)
 
     def has_task(self, task_path: Union[str, TaskPath]) -> bool:
         return self.find_task(task_path) is not None
@@ -94,15 +106,29 @@ class IWorkspace(ABC, Named):
 
     @staticmethod
     def find_default_workspace(task: Task) -> "IWorkspace":
-        ...  # TODO()
+        if hasattr(task, '_stem_workspace'):
+            return getattr(task, '_stem_workspace')
+        else:
+            if hasattr(task, '_func'):
+                module = getmodule(getattr(task, '_func'))
+                return IWorkspace.module_workspace(module)
 
     @staticmethod
     def module_workspace(module: ModuleType) -> "IWorkspace":
-        ...  # TODO()
+        filename = module.__name__.split('.').pop()
+        tasks = {}
+        workspaces = set()
+        for name in dir(module):
+            t = getattr(module, name)
+            if callable(t) and issubclass(type(t), Task):
+                tasks[name] = t
+            elif isclass(t) and t == IWorkspace:
+                workspaces.add(t)
+
+        return LocalWorkspace(filename, tasks, workspaces)
 
 
 class ILocalWorkspace(IWorkspace):
-
     @property
     def tasks(self) -> dict[str, Task]:
         return self._tasks
@@ -113,7 +139,6 @@ class ILocalWorkspace(IWorkspace):
 
 
 class LocalWorkspace(ILocalWorkspace):
-
     def __init__(self, name, tasks=(), workspaces=()):
         self._name = name
         self._tasks = tasks
@@ -121,4 +146,26 @@ class LocalWorkspace(ILocalWorkspace):
 
 
 class Workspace(ABCMeta, ILocalWorkspace):
-    ...  # TODO()
+    def __new__(mcls, name: str, bases: tuple[type, ...], namespace: dict[str, Any], **kwargs: Any):
+        # Class-objects of user classes implement the interface ILocalWorkspace
+        if ILocalWorkspace not in bases:
+            bases += (ILocalWorkspace,)
+        cls = super().__new__(mcls, name, bases, namespace, **kwargs)
+
+        _workspaces = cls.__dict__.get('workspaces', set())
+        cls.__call__ = lambda userclass: userclass
+
+        _tasks = {n: t for n, t in cls.__dict__.items() if isinstance(t, Task)}
+
+        cls_inst = cls()
+        cls_inst._name = name
+        cls_inst._tasks = _tasks
+        cls_inst._workspaces = _workspaces
+
+        for n, t in cls.__dict__.items():
+            if isinstance(t, Task):
+                setattr(cls_inst, n, ProxyTask(n, t))   # both methods and attributes are proxied
+                getattr(cls_inst, n)._stem_workspace = cls_inst
+
+        return cls_inst
+
