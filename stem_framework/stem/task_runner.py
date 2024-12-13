@@ -17,7 +17,10 @@ class TaskRunner(ABC, Generic[T]):
 
 class SimpleRunner(TaskRunner[T]):
     def run(self, meta: Meta, task_node: TaskNode[T]) -> T:
-        pass  # TODO(Assignment 5)
+        kwargs_tree = {
+            node.task.name: self.run(getattr(meta, node.task.name, {}), node) for node in task_node.dependencies
+        }
+        return task_node.task.transform(meta, **kwargs_tree)
 
 
 class ThreadingRunner(TaskRunner[T]):
