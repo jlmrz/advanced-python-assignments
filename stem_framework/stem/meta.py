@@ -6,7 +6,7 @@ intermediate states are possible. It allows using only data or metadata.
 from dataclasses import dataclass, astuple, asdict
 import dataclasses
 from typing import Optional, Any, Union, Tuple
-from stem_framework.stem.core import Dataclass
+from .core import Dataclass
 
 
 Meta = Union[Dataclass, dict]

@@ -31,7 +31,7 @@ class FunctionTask(Task[T]):
         self._name = name
         self._func = func
         self.dependencies = dependencies
-        self.specification = specification
+        self.specification = specification if specification is not None else ()
         self.settings = settings
 
     def __call__(self, *args, **kwargs):

@@ -152,7 +152,7 @@ class Workspace(ABCMeta, ILocalWorkspace):
             bases += (ILocalWorkspace,)
         cls = super().__new__(mcls, name, bases, namespace, **kwargs)
 
-        _workspaces = cls.__dict__.get('workspaces', set())
+        _workspaces = cls.__dict__.get('workspaces', ())
         cls.__call__ = lambda userclass: userclass
 
         _tasks = {n: t for n, t in cls.__dict__.items() if isinstance(t, Task)}
@@ -160,7 +160,7 @@ class Workspace(ABCMeta, ILocalWorkspace):
         cls_inst = cls()
         cls_inst._name = name
         cls_inst._tasks = _tasks
-        cls_inst._workspaces = _workspaces
+        cls_inst._workspaces = set(_workspaces)
 
         for n, t in cls.__dict__.items():
             if isinstance(t, Task):
