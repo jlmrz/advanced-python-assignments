@@ -6,9 +6,9 @@ from abc import abstractmethod, ABC, ABCMeta
 from types import ModuleType
 from typing import Optional, Any, TypeVar, Union
 from inspect import isclass, getmodule
-from stem_framework.stem.core import Named
-from stem_framework.stem.meta import Meta
-from stem_framework.stem.task import Task
+from stem.core import Named
+from stem.meta import Meta
+from stem.task import Task
 
 T = TypeVar("T")
 

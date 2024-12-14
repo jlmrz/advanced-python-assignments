@@ -5,8 +5,8 @@ from typing import TypeVar, Union, Tuple, Callable, Optional, Generic, Any, Iter
 from abc import ABC, abstractmethod
 from inspect import signature
 from functools import wraps
-from stem_framework.stem.core import Named
-from stem_framework.stem.meta import Specification, Meta
+from stem.core import Named
+from stem.meta import Specification, Meta
 
 T = TypeVar("T")
 
