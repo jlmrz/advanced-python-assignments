@@ -14,20 +14,28 @@ class ProtoList(Sized, Iterable):
         self.proto_class = proto_class
 
     def __enter__(self):
-        pass  # TODO(Assignment 8)
+        self.file = open(self.path, 'rb')
+        return self.file
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass  # TODO(Assignment 8)
+        self.file.__exit__(exc_type, exc_val, exc_tb)
 
-    def __len__(self):
-        pass  # TODO(Assignment 8)
+    def __len__(self) -> int:
+        # we do not want to load all messages in memory
+        n_of_msgs = 0
+        for _ in self.file.readline():
+            n_of_msgs += 1
+        return n_of_msgs
 
-    def __getitem__(self, item):
-        pass  # TODO(Assignment 8)
+    def __getitem__(self, item) -> Type[GeneratedProtocolMessageType]:
+        self.file.seek(0)
+        for _ in range(item):
+            self.__iter__()
+        return self.__iter__()
 
     def __iter__(self) -> Iterator[GeneratedProtocolMessageType]:
-        pass  # TODO(Assignment 8)
-
-
-
-
+        # Reference:
+        # https://googleapis.dev/python/protobuf/latest/google/protobuf/reflection.html
+        n = int.from_bytes(self.file.read(8), 'big')
+        proto_message = self.file.read(n)
+        yield self.proto_class('_message', proto_message)
