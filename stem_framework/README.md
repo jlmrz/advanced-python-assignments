@@ -1,5 +1,6 @@
 This project is licensed under the terms of the MIT license
 
+## Stem framework
 
 Command for deployment:
 
@@ -14,4 +15,8 @@ cd ./stem_framework
 python3 -m pip install -r requirements.txt
 pip install -e .
 ```
+
+## Description 
+
+**Assignments 1-11** are done, 11 and 5 are completed partly (selected tasks).
 
