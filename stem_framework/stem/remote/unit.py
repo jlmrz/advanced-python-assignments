@@ -12,8 +12,9 @@ from multiprocessing import Process
 from stem.meta import get_meta_attr
 
 
+# only for the distributor testing
 class Commands:
-    ...
+    powerfullity = Envelope(dict(command='powerfullity'))
 
 
 class UnitHandler(StreamRequestHandler):
@@ -23,7 +24,7 @@ class UnitHandler(StreamRequestHandler):
     powerfullity: int
 
     def handle(self) -> None:
-        # I'm not sure if this works fine, but you should run tests separately,
+        # I'm not sure if this works fine, but user should run tests separately,
         #   otherwise it runs into "OSError: [Errno 98] Address already in use"
         logging.debug('Handle started')
         # self.rfile is a file-like object created by the handler;
@@ -42,10 +43,8 @@ class UnitHandler(StreamRequestHandler):
                 if task is None:
                     response = Envelope(dict(status='failed', error='Task not found')).to_bytes()
                 else:
-                    # Probably, task should be executed in remote workspace as a remote task.
-                    # But I don't get it
                     task_result = self.task_master.execute(request.meta, task, self.workspace)
-                    response = Envelope(task_result.__dict__).to_bytes()
+                    response = Envelope(vars(task_result)).to_bytes()
             else:
                 response = Envelope(dict(status='failed', error='Task not found')).to_bytes()
         elif command == 'structure':
