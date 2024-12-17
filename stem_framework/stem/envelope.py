@@ -4,7 +4,7 @@ import sys
 import json
 import struct
 from asyncio import StreamReader, StreamWriter
-from io import RawIOBase, BufferedReader, BytesIO
+from io import RawIOBase, BufferedReader, BytesIO, BufferedIOBase
 from json import JSONEncoder
 from typing import Optional, Union, Any
 from .meta import Meta
@@ -35,13 +35,13 @@ class Envelope:
                 with mmap.mmap(file.fileno(), length=0, access=mmap.ACCESS_READ) as mmap_obj:
                     self.data = mmap_obj.read()
         else:
-            self.data = data
+            self.data = data if data is not None else b''
 
     def __str__(self):
         return str(self.meta)
 
     @staticmethod
-    def read(input: BufferedReader | BytesIO) -> "Envelope":
+    def read(input: BufferedReader | BytesIO | BufferedIOBase) -> "Envelope":
         assert input.read(2) == b'~#', 'Wrong input'
         assert input.read(4) == b'DF02'
         input.read(2)
