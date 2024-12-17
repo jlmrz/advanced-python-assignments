@@ -15,7 +15,6 @@ class ProtoList(Sized, Iterable):
 
     def __enter__(self):
         self.file = open(self.path, 'rb')
-        return self.file
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.file.__exit__(exc_type, exc_val, exc_tb)
