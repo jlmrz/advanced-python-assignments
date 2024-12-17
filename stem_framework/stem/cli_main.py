@@ -44,6 +44,9 @@ def stem_cli_main():
     parser = create_parser()
     args = parser.parse_args()
     if hasattr(args, 'func'):
+        # after parsing, it's not a workspace, but a string.
+        # do we need to extract workspace from str as IWorkspace or to hope for best?
+        # Technically, we restored content needed for help outputs...
         args.func(args.workspace, args)
 
 
