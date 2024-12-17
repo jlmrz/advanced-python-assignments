@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 
 from .meta import Meta, MetaVerification, Specification
 from .task import Task
-from .workspace import Workspace
+from .workspace import IWorkspace
 from .task_runner import TaskRunner, SimpleRunner
 from .task_tree import TaskNode, TaskTree
 
@@ -62,7 +62,7 @@ class TaskMaster:
         self.task_runner = task_runner
         self.task_tree = task_tree
 
-    def execute(self, meta: Meta, task: Task[T], workspace: Optional[Workspace] = None) -> TaskResult[T]:
+    def execute(self, meta: Meta, task: Task[T], workspace: Optional[IWorkspace] = None) -> TaskResult[T]:
         if self.task_tree is not None:
             task_node = self.task_tree.resolve_node(task, workspace)
         else:
