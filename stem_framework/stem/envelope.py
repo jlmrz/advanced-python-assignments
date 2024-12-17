@@ -17,7 +17,7 @@ class MetaEncoder(JSONEncoder):
 
     def default(self, obj: Meta) -> Any:
         if not isinstance(obj, dict):
-            return obj.__dict__
+            return vars(obj)
         else:
             return obj
 
@@ -76,7 +76,20 @@ class Envelope:
 
     @staticmethod
     async def async_read(reader: StreamReader) -> "Envelope":
-        pass  # TODO(Assignment 11)
+        assert await reader.read(2) == b'~#', 'Wrong input'
+        assert await reader.read(4) == b'DF02'
+        await reader.read(2)
+
+        meta_length = int.from_bytes(await reader.read(4), byteorder='big')
+        data_length = int.from_bytes(await reader.read(4), byteorder='big')
+        assert await reader.read(4) == b'~#\r\n'
+
+        meta = await reader.read(meta_length)
+        meta = json.loads(meta.decode('utf-8').replace("'", "\""))
+        data = await reader.read(data_length)
+        return Envelope(meta, data)
 
     async def async_write_to(self, writer: StreamWriter):
-        pass  # TODO(Assignment 11)
+        writer.write(self.to_bytes())
+        await writer.drain()
+
